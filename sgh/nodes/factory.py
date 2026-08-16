@@ -15,19 +15,19 @@ from sgh.nodes.mock_node import MockNode
 from sgh.nodes.tool_node import ToolNode
 
 
-def default_executor_factory(node: Node, client: Any = None) -> BaseNode:
+def default_executor_factory(node: Node, kwargs: dict[str, Any] | None = None) -> BaseNode:
     """
     Default factory to create a Node executor from a Node definition.
     
     Args:
         node: The Node from the plan.
-        client: Optional AsyncAnthropic client to inject into LLMNode.
+        kwargs: Optional dict of kwargs to pass to litellm in LLMNode.
         
     Returns:
         An instantiated BaseNode subclass ready for execution.
     """
     if node.config.node_type == NodeType.LLM:
-        return LLMNode(node, client=client)
+        return LLMNode(node, kwargs=kwargs)
     elif node.config.node_type == NodeType.TOOL:
         return ToolNode(node)
     elif node.config.node_type == NodeType.MOCK:

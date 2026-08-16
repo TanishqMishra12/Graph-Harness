@@ -7,7 +7,7 @@ partition (receives only ExecContext, never DiagContext).
 Flow:
 1. Render prompt_template with task, node_label, and upstream_outputs.
 2. If the prompt contains a RECOVERY PATCH (added by local_patch), it is automatically included.
-3. Call Anthropic API (structured output or raw text depending on contract).
+3. Call LLM API via litellm (structured output or raw text).
 4. Run syntactic validation (JSON Schema) if defined in contract.
 5. Return NodeOutput.
 """
@@ -17,7 +17,7 @@ import json
 import logging
 from typing import Any
 
-from anthropic import AsyncAnthropic
+import litellm
 from jsonschema import ValidationError, validate
 
 from sgh.nodes.base import BaseNode, ExecContext, NodeOutput
@@ -32,9 +32,9 @@ class LLMNode(BaseNode):
     The client is injected, or created with default credentials if None.
     """
 
-    def __init__(self, node: Any, client: AsyncAnthropic | None = None) -> None:
+    def __init__(self, node: Any, kwargs: dict[str, Any] | None = None) -> None:
         super().__init__(node)
-        self.client = client or AsyncAnthropic()
+        self.kwargs = kwargs or {}
 
     async def execute(self, ctx: ExecContext) -> NodeOutput:
         # 1. Prepare prompt
@@ -68,14 +68,15 @@ class LLMNode(BaseNode):
             )
 
         try:
-            response = await self.client.messages.create(
+            response = await litellm.acompletion(
                 model=ctx.config.model,
-                max_tokens=4096,
-                system=system_prompt,
                 messages=[
+                    {"role": "system", "content": system_prompt},
                     {"role": "user", "content": prompt}
                 ],
-                temperature=0.0,  # Deterministic for DAG nodes
+                temperature=0.0,
+                max_tokens=4096,
+                **self.kwargs
             )
         except Exception as e:
             # Infrastructure failure -> TRANSIENT
@@ -85,10 +86,10 @@ class LLMNode(BaseNode):
                 failure_type="transient"
             )
 
-        text_output = response.content[0].text.strip()
+        text_output = response.choices[0].message.content.strip()
         usage = {
-            "input_tokens": response.usage.input_tokens,
-            "output_tokens": response.usage.output_tokens,
+            "input_tokens": response.usage.prompt_tokens if response.usage else 0,
+            "output_tokens": response.usage.completion_tokens if response.usage else 0,
         }
 
         # 3. Validation

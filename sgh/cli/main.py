@@ -27,7 +27,7 @@ def validate(plan_path: Path):
         plan_json = plan_path.read_text()
         plan = Plan.model_validate_json(plan_json)
         _validate_plan(plan)
-        console.print(f"[green]Plan {plan.plan_id} (v{plan.version}) is valid![/green]")
+        console.print(f"[green]Plan {plan.plan_id} (v{plan.version}) is valid.[/green]")
     except Exception as e:
         console.print(f"[bold red]Validation failed:[/bold red] {e}")
         raise typer.Exit(1)
@@ -83,7 +83,7 @@ def run(plan_path: Path, db_path: str = "sgh.db", live: bool = True):
                 dashboard.stop()
             
             if result.succeeded:
-                console.print("\n[bold green]Execution succeeded![/bold green]")
+                console.print("\n[bold green]Execution succeeded.[/bold green]")
             else:
                 console.print(f"\n[bold red]Execution failed:[/bold red] {result.failure_summary}")
         finally:

@@ -181,8 +181,8 @@ class NodeConfig(BaseModel):
         ),
     )
     model: str = Field(
-        default="claude-sonnet-4-5",
-        description="LLM model identifier (Anthropic model name or OpenAI model name).",
+        default="anthropic/claude-3-5-sonnet-20240620",
+        description="LLM model identifier compatible with litellm (e.g. 'anthropic/claude-3.5-sonnet', 'nvidia/meta/llama-3.1-70b-instruct').",
     )
     tools: list[str] = Field(
         default_factory=list,

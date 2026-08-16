@@ -23,6 +23,6 @@ While SGH strictly adheres to the core architecture proposed in *From Agent Loop
 **Our Divergence:** SGH does not support subgraph nodes. The engine is entirely flat. While you can author complex topologies, you cannot encapsulate a sub-plan into a single `NodeType.SUBGRAPH`.
 
 ## Summary
-SGH successfully proves the primary thesis of the paper: **Decoupling the execution scheduler from the LLM context loop solves unbounded retries, enables true $|U| > 1$ concurrency, and creates an immutable audit trail.** 
+This implementation of SGH focuses on the execution scheduler, demonstrating that decoupling the scheduler from the LLM context loop mitigates unbounded retries, enables $|U| > 1$ concurrency, and supports immutable audit trails.
 
-Future iterations will focus on the Macro-Planner and automated global replanning to realize the full vision of the framework.
+Future iterations may introduce the Macro-Planner and automated global replanning components.
