@@ -63,7 +63,7 @@ async def run_plan(plan_id: str, version: int = 1):
     Execute a previously saved plan. (Blocking for MVP simplicity)
     """
     store = PlanStore(DB_PATH)
-    plan = await store.get_plan(plan_id, version)
+    plan = await store.load_plan(plan_id, version)
     if not plan:
         raise HTTPException(status_code=404, detail="Plan not found")
         
