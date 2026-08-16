@@ -63,6 +63,7 @@ async def main():
         label="Generate Python function",
         config=NodeConfig(
             node_type=NodeType.LLM,
+            model="nvidia_nim/meta/llama-3.1-70b-instruct",
             prompt_template="Write a python function called `hello_world` that returns 'hello'. Return as JSON with key 'code'.",
             contract=OutputContract(
                 json_schema={
