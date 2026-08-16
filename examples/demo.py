@@ -97,7 +97,9 @@ async def main():
         id="deploy_code",
         label="Approve deployment",
         config=NodeConfig(
-            node_type=NodeType.HUMAN
+            node_type=NodeType.MOCK,
+            mock_output={"approved": True},
+            mock_delay_s=1.0
         )
     )
 
@@ -120,19 +122,20 @@ async def main():
         logging.info(f"Plan already saved: {e}")
 
     # Setup live dashboard
-    dashboard = LiveDashboard(plan)
-    dashboard.start()
+    # dashboard = LiveDashboard(plan)
+    # dashboard.start()
 
     def handle_transition(event):
         event_log.on_transition(event)
-        dashboard.on_transition(event)
+        # dashboard.on_transition(event)
 
     def handle_round(event):
-        dashboard.on_round(event)
+        pass
+        # dashboard.on_round(event)
 
     # 3. Execute
     dispatcher = Dispatcher(
-        engine_config=EngineConfig(global_timeout_s=30.0),
+        engine_config=EngineConfig(global_timeout_s=120.0),
         on_node_transition=handle_transition,
         on_scheduling_round=handle_round
     )
