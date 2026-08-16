@@ -142,19 +142,7 @@ class ExecutionResult:
 NodeExecutorFactory = Callable[[Node], BaseNode]
 
 
-def default_executor_factory(node: Node) -> BaseNode:
-    """
-    Default factory: returns a MockNode for MOCK type, raises for others.
 
-    The LLM executor factory is wired in Phase 4.
-    """
-    from sgh.core.plan import NodeType
-    if node.config.node_type == NodeType.MOCK:
-        return MockNode(node)
-    raise NotImplementedError(
-        f"No executor available for node_type={node.config.node_type.value!r}. "
-        "Wire a full executor factory when using LLM or TOOL nodes."
-    )
 
 
 # ---------------------------------------------------------------------------
@@ -250,6 +238,11 @@ class Dispatcher:
             # Emit blocked/skipped transitions
             for node_id in rsr.blocked_node_ids:
                 self._emit_transition(plan, round_number, node_id, NodeState.PENDING, NodeState.BLOCKED)
+                states[node_id] = transition(NodeState.BLOCKED, NodeState.FAILED, node_id)
+                self._emit_transition(
+                    plan, round_number, node_id, NodeState.BLOCKED, NodeState.FAILED,
+                    error_message="Permanently blocked by predecessor failure."
+                )
             for node_id in rsr.skipped_node_ids:
                 prev = NodeState.PENDING  # may also be READY; logged as best-effort
                 self._emit_transition(plan, round_number, node_id, prev, NodeState.SKIPPED)

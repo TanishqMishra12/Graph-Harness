@@ -24,6 +24,7 @@ from sgh.scheduler.dispatcher import Dispatcher, EngineConfig
 from sgh.persistence.models import init_db
 from sgh.persistence.plan_store import PlanStore
 from sgh.persistence.event_log import EventLog
+from sgh.viz.live_view import LiveDashboard
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
@@ -117,10 +118,22 @@ async def main():
     except Exception as e:
         logging.info(f"Plan already saved: {e}")
 
+    # Setup live dashboard
+    dashboard = LiveDashboard(plan)
+    dashboard.start()
+
+    def handle_transition(event):
+        event_log.on_transition(event)
+        dashboard.on_transition(event)
+
+    def handle_round(event):
+        dashboard.on_round(event)
+
     # 3. Execute
     dispatcher = Dispatcher(
         engine_config=EngineConfig(global_timeout_s=30.0),
-        on_node_transition=event_log.on_transition
+        on_node_transition=handle_transition,
+        on_scheduling_round=handle_round
     )
 
     logging.info("Starting DAG execution...")
@@ -131,7 +144,8 @@ async def main():
     if "write_code" in result.node_outputs:
         logging.info(f"Generated code: {result.node_outputs['write_code']['code']}")
 
-    # Stop background logger
+    # Stop background logger and dashboard
+    dashboard.stop()
     await event_log.stop()
 
     # 4. Read back audit trail
