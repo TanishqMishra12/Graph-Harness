@@ -110,6 +110,3 @@ The system is composed of four primary layers:
 
 For known limitations and divergences from the reference paper (such as the absence of a dynamic LLM planner), see `docs/LIMITATIONS.md`.
 
-## License
-
-MIT License.
